@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-// Définition du modèle Secretaire
+
 const Secretaire = sequelize.define('Secretaire', {
   id: {
     type: DataTypes.INTEGER,

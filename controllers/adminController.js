@@ -3,19 +3,14 @@ const { Admin, Docteur, Secretaire } = require('../models');
 const { generateToken } = require('../utils/jwt');
 const redisClient = require('../config/redis');
 
-// ============================================
-// INSCRIPTION D'UN ADMIN (Première fois)
-// ============================================
 
-/**
- * Permet au premier admin de s'inscrire
- * Ensuite, bloque les nouvelles inscriptions
- */
+
+
 exports.register = async (req, res) => {
   try {
     const { nom, prenom, email, mot_de_passe, telephone } = req.body;
 
-    // Vérifier si un admin existe déjà
+    
     const adminCount = await Admin.count();
     if (adminCount > 0) {
       return res.status(403).json({
@@ -24,7 +19,7 @@ exports.register = async (req, res) => {
       });
     }
 
-    // Vérifier si l'email existe déjà
+    
     const existingAdmin = await Admin.findOne({ where: { email } });
     if (existingAdmin) {
       return res.status(400).json({
@@ -33,10 +28,10 @@ exports.register = async (req, res) => {
       });
     }
 
-    // Hasher le mot de passe
+    
     const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
 
-    // Créer l'admin
+    
     const admin = await Admin.create({
       nom,
       prenom,
@@ -67,15 +62,12 @@ exports.register = async (req, res) => {
   }
 };
 
-// ============================================
-// CONNEXION D'UN ADMIN
-// ============================================
 
 exports.login = async (req, res) => {
   try {
     const { email, mot_de_passe } = req.body;
 
-    // Vérifier si l'admin existe
+   
     const admin = await Admin.findOne({ where: { email } });
     if (!admin) {
       return res.status(401).json({
@@ -84,7 +76,7 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Vérifier le mot de passe
+    
     const isPasswordValid = await bcrypt.compare(mot_de_passe, admin.mot_de_passe);
     if (!isPasswordValid) {
       return res.status(401).json({
@@ -93,15 +85,15 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Générer le token JWT
+    
     const token = generateToken({
       id: admin.id,
       email: admin.email,
       role: admin.role
     });
 
-    // Sauvegarder le token dans Redis (session active)
-    await redisClient.setEx(`token:${admin.id}`, 86400, token); // 24 heures
+    
+    await redisClient.setEx(`token:${admin.id}`, 86400, token); 
 
     res.status(200).json({
       success: true,
@@ -128,13 +120,10 @@ exports.login = async (req, res) => {
   }
 };
 
-// ============================================
-// DÉCONNEXION D'UN ADMIN
-// ============================================
 
 exports.logout = async (req, res) => {
   try {
-    // Supprimer le token de Redis
+    
     await redisClient.del(`token:${req.user.id}`);
 
     res.status(200).json({
@@ -152,15 +141,12 @@ exports.logout = async (req, res) => {
   }
 };
 
-// ============================================
-// CRÉER UN COMPTE DOCTEUR
-// ============================================
 
 exports.createDocteur = async (req, res) => {
   try {
     const { nom, prenom, email, mot_de_passe, telephone, specialite } = req.body;
 
-    // Vérifier si l'email existe déjà
+    
     const existingDocteur = await Docteur.findOne({ where: { email } });
     if (existingDocteur) {
       return res.status(400).json({
@@ -169,10 +155,10 @@ exports.createDocteur = async (req, res) => {
       });
     }
 
-    // Hasher le mot de passe
+    
     const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
 
-    // Créer le docteur
+   
     const docteur = await Docteur.create({
       nom,
       prenom,
@@ -207,9 +193,6 @@ exports.createDocteur = async (req, res) => {
   }
 };
 
-// ============================================
-// CRÉER UN COMPTE SECRÉTAIRE
-// ============================================
 
 exports.createSecretaire = async (req, res) => {
   try {
@@ -224,10 +207,10 @@ exports.createSecretaire = async (req, res) => {
       });
     }
 
-    // Hasher le mot de passe
+    
     const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
 
-    // Créer la secrétaire
+   
     const secretaire = await Secretaire.create({
       nom,
       prenom,
@@ -258,9 +241,6 @@ exports.createSecretaire = async (req, res) => {
   }
 };
 
-// ============================================
-// VOIR TOUS LES DOCTEURS
-// ============================================
 
 exports.getAllDocteurs = async (req, res) => {
   try {
@@ -284,9 +264,7 @@ exports.getAllDocteurs = async (req, res) => {
   }
 };
 
-// ============================================
-// VOIR TOUTES LES SECRÉTAIRES
-// ============================================
+
 
 exports.getAllSecretaires = async (req, res) => {
   try {
@@ -310,9 +288,7 @@ exports.getAllSecretaires = async (req, res) => {
   }
 };
 
-// ============================================
-// SUPPRIMER UN DOCTEUR
-// ============================================
+
 
 exports.deleteDocteur = async (req, res) => {
   try {
@@ -343,9 +319,7 @@ exports.deleteDocteur = async (req, res) => {
   }
 };
 
-// ============================================
-// SUPPRIMER UNE SECRÉTAIRE
-// ============================================
+
 
 exports.deleteSecretaire = async (req, res) => {
   try {

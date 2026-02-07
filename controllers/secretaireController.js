@@ -3,16 +3,13 @@ const { Secretaire, RendezVous, Patient, Docteur } = require('../models');
 const { generateToken } = require('../utils/jwt');
 const redisClient = require('../config/redis');
 
-// ============================================
-// CONNEXION D'UNE SECRÉTAIRE
-// (Pas d'inscription - créée par l'admin)
-// ============================================
+
 
 exports.login = async (req, res) => {
   try {
     const { email, mot_de_passe } = req.body;
 
-    // Vérifier si la secrétaire existe
+    
     const secretaire = await Secretaire.findOne({ where: { email } });
     if (!secretaire) {
       return res.status(401).json({
@@ -21,7 +18,7 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Vérifier le mot de passe
+    
     const isPasswordValid = await bcrypt.compare(mot_de_passe, secretaire.mot_de_passe);
     if (!isPasswordValid) {
       return res.status(401).json({
@@ -30,15 +27,14 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Générer le token JWT
     const token = generateToken({
       id: secretaire.id,
       email: secretaire.email,
       role: secretaire.role
     });
 
-    // Sauvegarder le token dans Redis
-    await redisClient.setEx(`token:${secretaire.id}`, 86400, token); // 24 heures
+    
+    await redisClient.setEx(`token:${secretaire.id}`, 86400, token); 
 
     res.status(200).json({
       success: true,
@@ -65,9 +61,6 @@ exports.login = async (req, res) => {
   }
 };
 
-// ============================================
-// DÉCONNEXION D'UNE SECRÉTAIRE
-// ============================================
 
 exports.logout = async (req, res) => {
   try {
@@ -87,10 +80,6 @@ exports.logout = async (req, res) => {
     });
   }
 };
-
-// ============================================
-// VOIR LES DEMANDES DES PATIENTS (en attente)
-// ============================================
 
 exports.getDemandesPatients = async (req, res) => {
   try {
@@ -120,16 +109,12 @@ exports.getDemandesPatients = async (req, res) => {
   }
 };
 
-// ============================================
-// ASSIGNER UN DOCTEUR À UNE DEMANDE
-// ============================================
-
 exports.assignerDocteur = async (req, res) => {
   try {
-    const { id } = req.params; // ID du rendez-vous
+    const { id } = req.params; 
     const { docteur_id, date, heure } = req.body;
 
-    // Vérifier que le rendez-vous existe
+    
     const rendezVous = await RendezVous.findByPk(id, {
       include: [{
         model: Patient,
@@ -145,7 +130,7 @@ exports.assignerDocteur = async (req, res) => {
       });
     }
 
-    // Vérifier que le rendez-vous est en attente de la secrétaire
+    
     if (rendezVous.statut !== 'en_attente_secretaire') {
       return res.status(400).json({
         success: false,
@@ -153,7 +138,7 @@ exports.assignerDocteur = async (req, res) => {
       });
     }
 
-    // Vérifier que le docteur existe
+    
     const docteur = await Docteur.findByPk(docteur_id);
     if (!docteur) {
       return res.status(404).json({
@@ -162,17 +147,17 @@ exports.assignerDocteur = async (req, res) => {
       });
     }
 
-    // Assigner le docteur et changer le statut
+    
     rendezVous.docteur_id = docteur_id;
     rendezVous.statut = 'en_attente_docteur';
     
-    // Mettre à jour la date et l'heure si fournis
+    
     if (date) rendezVous.date = date;
     if (heure) rendezVous.heure = heure;
     
     await rendezVous.save();
 
-    // Récupérer le rendez-vous avec toutes les relations
+  
     const rendezVousComplet = await RendezVous.findByPk(id, {
       include: [
         {
@@ -204,15 +189,11 @@ exports.assignerDocteur = async (req, res) => {
   }
 };
 
-// ============================================
-// VOIR TOUS LES RENDEZ-VOUS
-// ============================================
-
 exports.getTousRendezVous = async (req, res) => {
   try {
     const { statut, date } = req.query;
 
-    // Construire les conditions de recherche
+    
     const whereConditions = {};
     if (statut) whereConditions.statut = statut;
     if (date) whereConditions.date = date;
@@ -250,15 +231,12 @@ exports.getTousRendezVous = async (req, res) => {
   }
 };
 
-// ============================================
-// PLANIFIER UN RENDEZ-VOUS DIRECTEMENT
-// ============================================
 
 exports.planifierRendezVous = async (req, res) => {
   try {
     const { patient_id, docteur_id, date, heure, symptomes } = req.body;
 
-    // Vérifier que le patient existe
+    
     const patient = await Patient.findByPk(patient_id);
     if (!patient) {
       return res.status(404).json({
@@ -267,7 +245,7 @@ exports.planifierRendezVous = async (req, res) => {
       });
     }
 
-    // Vérifier que le docteur existe
+    
     const docteur = await Docteur.findByPk(docteur_id);
     if (!docteur) {
       return res.status(404).json({
@@ -276,7 +254,7 @@ exports.planifierRendezVous = async (req, res) => {
       });
     }
 
-    // Créer le rendez-vous directement avec statut "en_attente_docteur"
+    
     const rendezVous = await RendezVous.create({
       patient_id,
       docteur_id,
@@ -286,7 +264,7 @@ exports.planifierRendezVous = async (req, res) => {
       statut: 'en_attente_docteur'
     });
 
-    // Récupérer avec les relations
+    
     const rendezVousComplet = await RendezVous.findByPk(rendezVous.id, {
       include: [
         {
@@ -318,9 +296,7 @@ exports.planifierRendezVous = async (req, res) => {
   }
 };
 
-// ============================================
-// MODIFIER UN RENDEZ-VOUS
-// ============================================
+
 
 exports.modifierRendezVous = async (req, res) => {
   try {
@@ -335,11 +311,11 @@ exports.modifierRendezVous = async (req, res) => {
       });
     }
 
-    // Mettre à jour les champs fournis
+    
     if (date) rendezVous.date = date;
     if (heure) rendezVous.heure = heure;
     if (docteur_id) {
-      // Vérifier que le docteur existe
+      
       const docteur = await Docteur.findByPk(docteur_id);
       if (!docteur) {
         return res.status(404).json({
@@ -353,7 +329,7 @@ exports.modifierRendezVous = async (req, res) => {
 
     await rendezVous.save();
 
-    // Récupérer avec les relations
+    
     const rendezVousComplet = await RendezVous.findByPk(id, {
       include: [
         {
@@ -385,9 +361,7 @@ exports.modifierRendezVous = async (req, res) => {
   }
 };
 
-// ============================================
-// ANNULER UN RENDEZ-VOUS
-// ============================================
+
 
 exports.annulerRendezVous = async (req, res) => {
   try {
@@ -420,9 +394,7 @@ exports.annulerRendezVous = async (req, res) => {
   }
 };
 
-// ============================================
-// STATISTIQUES
-// ============================================
+
 
 exports.getStatistiques = async (req, res) => {
   try {
@@ -450,6 +422,27 @@ exports.getStatistiques = async (req, res) => {
       success: false,
       message: 'Erreur lors de la récupération des statistiques',
       error: error.message
+    });
+  }
+};
+
+
+exports.getTousDocteurs = async (req, res) => {
+  try {
+    const docteurs = await Docteur.findAll({
+      attributes: { exclude: ['mot_de_passe'] }
+    });
+
+    res.json({
+      success: true,
+      count: docteurs.length,
+      data: docteurs
+    });
+  } catch (error) {
+    console.error('Erreur getTousDocteurs:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la récupération des docteurs'
     });
   }
 };

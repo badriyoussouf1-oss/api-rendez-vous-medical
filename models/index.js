@@ -7,9 +7,7 @@ const Docteur = require('./Docteur');
 const Patient = require('./Patient');
 const RendezVous = require('./RendezVous');
 
-// ============================================
-// DÉFINITION DES RELATIONS
-// ============================================
+
 
 // Relation Patient <-> RendezVous (1:N)
 // Un patient peut avoir plusieurs rendez-vous
@@ -47,14 +45,14 @@ const syncDatabase = async (options = {}) => {
     // Par défaut (sans options) : Crée les tables si elles n'existent pas
     
     await sequelize.sync(options);
-    console.log('✅ Base de données synchronisée avec succès !');
+    console.log('Base de données synchronisée avec succès !');
     
     // Afficher les tables créées
     const tables = await sequelize.getQueryInterface().showAllTables();
-    console.log('📋 Tables créées :', tables);
+    console.log('Tables créées :', tables);
     
   } catch (error) {
-    console.error('❌ Erreur lors de la synchronisation de la base de données :', error);
+    console.error('Erreur lors de la synchronisation de la base de données :', error);
     throw error;
   }
 };

@@ -3,10 +3,6 @@ const router = express.Router();
 const patientController = require('../controllers/patientController');
 const { authenticateToken, checkRole } = require('../middleware/auth');
 
-// ============================================
-// ROUTES PUBLIQUES (sans authentification)
-// ============================================
-
 /**
  * @swagger
  * /api/patients/register:
@@ -97,9 +93,7 @@ router.post('/register', patientController.register);
  */
 router.post('/login', patientController.login);
 
-// ============================================
-// ROUTES PROTÉGÉES (authentification requise)
-// ============================================
+
 
 /**
  * @swagger

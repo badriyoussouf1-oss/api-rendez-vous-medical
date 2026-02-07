@@ -3,15 +3,13 @@ const { Patient, RendezVous, Docteur } = require('../models');
 const { generateToken } = require('../utils/jwt');
 const redisClient = require('../config/redis');
 
-// ============================================
-// INSCRIPTION D'UN PATIENT
-// ============================================
+
 
 exports.register = async (req, res) => {
   try {
     const { nom, prenom, email, mot_de_passe, telephone, date_naissance } = req.body;
 
-    // Vérifier si l'email existe déjà
+    
     const existingPatient = await Patient.findOne({ where: { email } });
     if (existingPatient) {
       return res.status(400).json({
@@ -20,10 +18,10 @@ exports.register = async (req, res) => {
       });
     }
 
-    // Hasher le mot de passe
+    
     const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
 
-    // Créer le patient
+    
     const patient = await Patient.create({
       nom,
       prenom,
@@ -57,15 +55,13 @@ exports.register = async (req, res) => {
   }
 };
 
-// ============================================
-// CONNEXION D'UN PATIENT
-// ============================================
+
 
 exports.login = async (req, res) => {
   try {
     const { email, mot_de_passe } = req.body;
 
-    // Vérifier si le patient existe
+    
     const patient = await Patient.findOne({ where: { email } });
     if (!patient) {
       return res.status(401).json({
@@ -74,7 +70,7 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Vérifier le mot de passe
+    
     const isPasswordValid = await bcrypt.compare(mot_de_passe, patient.mot_de_passe);
     if (!isPasswordValid) {
       return res.status(401).json({
@@ -83,15 +79,15 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Générer le token JWT
+    
     const token = generateToken({
       id: patient.id,
       email: patient.email,
       role: patient.role
     });
 
-    // Sauvegarder le token dans Redis
-    await redisClient.setEx(`token:${patient.id}`, 86400, token); // 24 heures
+    
+    await redisClient.setEx(`token:${patient.id}`, 86400, token); 
 
     res.status(200).json({
       success: true,
@@ -118,9 +114,7 @@ exports.login = async (req, res) => {
   }
 };
 
-// ============================================
-// DÉCONNEXION D'UN PATIENT
-// ============================================
+
 
 exports.logout = async (req, res) => {
   try {
@@ -141,9 +135,7 @@ exports.logout = async (req, res) => {
   }
 };
 
-// ============================================
-// VOIR LES DOCTEURS LIBRES
-// ============================================
+
 
 exports.getDocteursLibres = async (req, res) => {
   try {
@@ -168,23 +160,21 @@ exports.getDocteursLibres = async (req, res) => {
   }
 };
 
-// ============================================
-// DEMANDER UN RENDEZ-VOUS
-// ============================================
+
 
 exports.demanderRendezVous = async (req, res) => {
   try {
     const { date, heure, symptomes, docteur_preference_id } = req.body;
     const patient_id = req.user.id;
 
-    // Créer la demande de rendez-vous (statut: en_attente_secretaire)
+    
     const rendezVous = await RendezVous.create({
       date,
       heure,
       statut: 'en_attente_secretaire',
       symptomes,
       patient_id,
-      docteur_id: null // Sera assigné par la secrétaire
+      docteur_id: null 
     });
 
     res.status(201).json({
@@ -209,9 +199,7 @@ exports.demanderRendezVous = async (req, res) => {
   }
 };
 
-// ============================================
-// VOIR SES RENDEZ-VOUS
-// ============================================
+
 
 exports.getMesRendezVous = async (req, res) => {
   try {
@@ -243,16 +231,14 @@ exports.getMesRendezVous = async (req, res) => {
   }
 };
 
-// ============================================
-// ANNULER UN RENDEZ-VOUS
-// ============================================
+
 
 exports.annulerRendezVous = async (req, res) => {
   try {
     const { id } = req.params;
     const patient_id = req.user.id;
 
-    // Vérifier que le rendez-vous existe et appartient au patient
+    
     const rendezVous = await RendezVous.findOne({
       where: { id, patient_id }
     });
@@ -264,7 +250,7 @@ exports.annulerRendezVous = async (req, res) => {
       });
     }
 
-    // Vérifier que le rendez-vous peut être annulé
+    
     if (rendezVous.statut === 'annule') {
       return res.status(400).json({
         success: false,
@@ -272,7 +258,7 @@ exports.annulerRendezVous = async (req, res) => {
       });
     }
 
-    // Annuler le rendez-vous
+    
     rendezVous.statut = 'annule';
     await rendezVous.save();
 

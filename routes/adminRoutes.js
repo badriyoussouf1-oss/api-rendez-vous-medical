@@ -3,9 +3,7 @@ const router = express.Router();
 const adminController = require('../controllers/adminController');
 const { authenticateToken, checkRole } = require('../middleware/auth');
 
-// ============================================
-// ROUTES PUBLIQUES (sans authentification)
-// ============================================
+
 
 /**
  * @swagger
@@ -93,9 +91,7 @@ router.post('/register', adminController.register);
  */
 router.post('/login', adminController.login);
 
-// ============================================
-// ROUTES PROTÉGÉES (authentification requise)
-// ============================================
+
 
 /**
  * @swagger

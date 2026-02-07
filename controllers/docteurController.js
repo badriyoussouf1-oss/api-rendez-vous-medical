@@ -3,10 +3,7 @@ const { Docteur, RendezVous, Patient } = require('../models');
 const { generateToken } = require('../utils/jwt');
 const redisClient = require('../config/redis');
 
-// ============================================
-// CONNEXION D'UN DOCTEUR
-// (Pas d'inscription - créé par l'admin)
-// ============================================
+
 
 exports.login = async (req, res) => {
   try {
@@ -67,9 +64,7 @@ exports.login = async (req, res) => {
   }
 };
 
-// ============================================
-// DÉCONNEXION D'UN DOCTEUR
-// ============================================
+
 
 exports.logout = async (req, res) => {
   try {
@@ -90,9 +85,6 @@ exports.logout = async (req, res) => {
   }
 };
 
-// ============================================
-// VOIR SES RENDEZ-VOUS
-// ============================================
 
 exports.getMesRendezVous = async (req, res) => {
   try {
@@ -131,9 +123,7 @@ exports.getMesRendezVous = async (req, res) => {
   }
 };
 
-// ============================================
-// ACCEPTER UN RENDEZ-VOUS
-// ============================================
+
 
 exports.accepterRendezVous = async (req, res) => {
   try {
@@ -185,9 +175,7 @@ exports.accepterRendezVous = async (req, res) => {
   }
 };
 
-// ============================================
-// REFUSER UN RENDEZ-VOUS
-// ============================================
+
 
 exports.refuserRendezVous = async (req, res) => {
   try {
@@ -239,9 +227,6 @@ exports.refuserRendezVous = async (req, res) => {
   }
 };
 
-// ============================================
-// CHANGER SON STATUT (libre/occupé)
-// ============================================
 
 exports.changerStatut = async (req, res) => {
   try {
@@ -289,9 +274,7 @@ exports.changerStatut = async (req, res) => {
   }
 };
 
-// ============================================
-// VOIR SON CALENDRIER
-// ============================================
+
 
 exports.getCalendrier = async (req, res) => {
   try {

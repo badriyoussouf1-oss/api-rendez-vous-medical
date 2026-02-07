@@ -379,4 +379,34 @@ router.delete('/rendez-vous/:id', authenticateToken, checkRole(['secretaire']), 
  */
 router.get('/statistiques', authenticateToken, checkRole(['secretaire']), secretaireController.getStatistiques);
 
+/**
+ * @swagger
+ * /api/secretaires/docteurs:
+ *   get:
+ *     summary: Obtenir la liste de tous les docteurs
+ *     tags: [Secrétaire]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Récupère la liste de tous les docteurs pour pouvoir les assigner aux rendez-vous
+ *     responses:
+ *       200:
+ *         description: Liste des docteurs
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 count:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Docteur'
+ *       401:
+ *         description: Non authentifié
+ */
+router.get('/docteurs', authenticateToken, checkRole(['secretaire']), secretaireController.getTousDocteurs);
+
 module.exports = router;
