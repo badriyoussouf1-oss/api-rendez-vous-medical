@@ -3,8 +3,6 @@ const { Patient, RendezVous, Docteur } = require('../models');
 const { generateToken } = require('../utils/jwt');
 const redisClient = require('../config/redis');
 
-
-
 exports.register = async (req, res) => {
   try {
     const { nom, prenom, email, mot_de_passe, telephone, date_naissance } = req.body;
@@ -17,11 +15,7 @@ exports.register = async (req, res) => {
         message: 'Cet email est déjà utilisé'
       });
     }
-
-    
-    const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
-
-    
+    const hashedPassword = await bcrypt.hash(mot_de_passe, 10);    
     const patient = await Patient.create({
       nom,
       prenom,
@@ -60,7 +54,6 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, mot_de_passe } = req.body;
-
     
     const patient = await Patient.findOne({ where: { email } });
     if (!patient) {
@@ -69,8 +62,6 @@ exports.login = async (req, res) => {
         message: 'Email ou mot de passe incorrect'
       });
     }
-
-    
     const isPasswordValid = await bcrypt.compare(mot_de_passe, patient.mot_de_passe);
     if (!isPasswordValid) {
       return res.status(401).json({
@@ -78,15 +69,13 @@ exports.login = async (req, res) => {
         message: 'Email ou mot de passe incorrect'
       });
     }
-
-    
+  
     const token = generateToken({
       id: patient.id,
       email: patient.email,
       role: patient.role
     });
 
-    
     await redisClient.setEx(`token:${patient.id}`, 86400, token); 
 
     res.status(200).json({
@@ -114,8 +103,6 @@ exports.login = async (req, res) => {
   }
 };
 
-
-
 exports.logout = async (req, res) => {
   try {
     await redisClient.del(`token:${req.user.id}`);
@@ -134,8 +121,6 @@ exports.logout = async (req, res) => {
     });
   }
 };
-
-
 
 exports.getDocteursLibres = async (req, res) => {
   try {
@@ -160,14 +145,10 @@ exports.getDocteursLibres = async (req, res) => {
   }
 };
 
-
-
 exports.demanderRendezVous = async (req, res) => {
   try {
     const { date, heure, symptomes, docteur_preference_id } = req.body;
-    const patient_id = req.user.id;
-
-    
+    const patient_id = req.user.id;    
     const rendezVous = await RendezVous.create({
       date,
       heure,
@@ -199,8 +180,6 @@ exports.demanderRendezVous = async (req, res) => {
   }
 };
 
-
-
 exports.getMesRendezVous = async (req, res) => {
   try {
     const patient_id = req.user.id;
@@ -231,8 +210,6 @@ exports.getMesRendezVous = async (req, res) => {
   }
 };
 
-
-
 exports.annulerRendezVous = async (req, res) => {
   try {
     const { id } = req.params;
@@ -248,17 +225,13 @@ exports.annulerRendezVous = async (req, res) => {
         success: false,
         message: 'Rendez-vous non trouvé'
       });
-    }
-
-    
+    } 
     if (rendezVous.statut === 'annule') {
       return res.status(400).json({
         success: false,
         message: 'Ce rendez-vous est déjà annulé'
       });
     }
-
-    
     rendezVous.statut = 'annule';
     await rendezVous.save();
 
