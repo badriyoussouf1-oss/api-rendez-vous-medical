@@ -3,10 +3,6 @@ const router = express.Router();
 const secretaireController = require('../controllers/secretaireController');
 const { authenticateToken, checkRole } = require('../middleware/auth');
 
-// ============================================
-// ROUTES PUBLIQUES (sans authentification)
-// ============================================
-
 /**
  * @swagger
  * /api/secretaires/login:
@@ -43,10 +39,6 @@ const { authenticateToken, checkRole } = require('../middleware/auth');
  *         description: Email ou mot de passe incorrect
  */
 router.post('/login', secretaireController.login);
-
-// ============================================
-// ROUTES PROTÉGÉES (authentification requise)
-// ============================================
 
 /**
  * @swagger
