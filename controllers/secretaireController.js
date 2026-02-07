@@ -3,13 +3,9 @@ const { Secretaire, RendezVous, Patient, Docteur } = require('../models');
 const { generateToken } = require('../utils/jwt');
 const redisClient = require('../config/redis');
 
-
-
 exports.login = async (req, res) => {
   try {
-    const { email, mot_de_passe } = req.body;
-
-    
+    const { email, mot_de_passe } = req.body;    
     const secretaire = await Secretaire.findOne({ where: { email } });
     if (!secretaire) {
       return res.status(401).json({
@@ -17,8 +13,6 @@ exports.login = async (req, res) => {
         message: 'Email ou mot de passe incorrect'
       });
     }
-
-    
     const isPasswordValid = await bcrypt.compare(mot_de_passe, secretaire.mot_de_passe);
     if (!isPasswordValid) {
       return res.status(401).json({
@@ -33,9 +27,7 @@ exports.login = async (req, res) => {
       role: secretaire.role
     });
 
-    
     await redisClient.setEx(`token:${secretaire.id}`, 86400, token); 
-
     res.status(200).json({
       success: true,
       message: 'Connexion réussie',
@@ -60,12 +52,9 @@ exports.login = async (req, res) => {
     });
   }
 };
-
-
 exports.logout = async (req, res) => {
   try {
     await redisClient.del(`token:${req.user.id}`);
-
     res.status(200).json({
       success: true,
       message: 'Déconnexion réussie'
@@ -80,7 +69,6 @@ exports.logout = async (req, res) => {
     });
   }
 };
-
 exports.getDemandesPatients = async (req, res) => {
   try {
     const demandes = await RendezVous.findAll({
@@ -92,7 +80,6 @@ exports.getDemandesPatients = async (req, res) => {
       }],
       order: [['created_at', 'ASC']] // Les plus anciennes d'abord
     });
-
     res.status(200).json({
       success: true,
       count: demandes.length,
@@ -108,13 +95,10 @@ exports.getDemandesPatients = async (req, res) => {
     });
   }
 };
-
 exports.assignerDocteur = async (req, res) => {
   try {
     const { id } = req.params; 
-    const { docteur_id, date, heure } = req.body;
-
-    
+    const { docteur_id, date, heure } = req.body;  
     const rendezVous = await RendezVous.findByPk(id, {
       include: [{
         model: Patient,
@@ -129,16 +113,12 @@ exports.assignerDocteur = async (req, res) => {
         message: 'Rendez-vous non trouvé'
       });
     }
-
-    
     if (rendezVous.statut !== 'en_attente_secretaire') {
       return res.status(400).json({
         success: false,
         message: `Impossible d'assigner ce rendez-vous. Statut actuel: ${rendezVous.statut}`
       });
     }
-
-    
     const docteur = await Docteur.findByPk(docteur_id);
     if (!docteur) {
       return res.status(404).json({
@@ -146,18 +126,12 @@ exports.assignerDocteur = async (req, res) => {
         message: 'Docteur non trouvé'
       });
     }
-
-    
     rendezVous.docteur_id = docteur_id;
     rendezVous.statut = 'en_attente_docteur';
-    
-    
     if (date) rendezVous.date = date;
     if (heure) rendezVous.heure = heure;
     
     await rendezVous.save();
-
-  
     const rendezVousComplet = await RendezVous.findByPk(id, {
       include: [
         {
@@ -192,8 +166,6 @@ exports.assignerDocteur = async (req, res) => {
 exports.getTousRendezVous = async (req, res) => {
   try {
     const { statut, date } = req.query;
-
-    
     const whereConditions = {};
     if (statut) whereConditions.statut = statut;
     if (date) whereConditions.date = date;
@@ -230,13 +202,9 @@ exports.getTousRendezVous = async (req, res) => {
     });
   }
 };
-
-
 exports.planifierRendezVous = async (req, res) => {
   try {
-    const { patient_id, docteur_id, date, heure, symptomes } = req.body;
-
-    
+    const { patient_id, docteur_id, date, heure, symptomes } = req.body;  
     const patient = await Patient.findByPk(patient_id);
     if (!patient) {
       return res.status(404).json({
@@ -244,8 +212,6 @@ exports.planifierRendezVous = async (req, res) => {
         message: 'Patient non trouvé'
       });
     }
-
-    
     const docteur = await Docteur.findByPk(docteur_id);
     if (!docteur) {
       return res.status(404).json({
@@ -253,8 +219,6 @@ exports.planifierRendezVous = async (req, res) => {
         message: 'Docteur non trouvé'
       });
     }
-
-    
     const rendezVous = await RendezVous.create({
       patient_id,
       docteur_id,
@@ -263,8 +227,6 @@ exports.planifierRendezVous = async (req, res) => {
       symptomes,
       statut: 'en_attente_docteur'
     });
-
-    
     const rendezVousComplet = await RendezVous.findByPk(rendezVous.id, {
       include: [
         {
@@ -295,9 +257,6 @@ exports.planifierRendezVous = async (req, res) => {
     });
   }
 };
-
-
-
 exports.modifierRendezVous = async (req, res) => {
   try {
     const { id } = req.params;
@@ -309,9 +268,7 @@ exports.modifierRendezVous = async (req, res) => {
         success: false,
         message: 'Rendez-vous non trouvé'
       });
-    }
-
-    
+    }  
     if (date) rendezVous.date = date;
     if (heure) rendezVous.heure = heure;
     if (docteur_id) {
@@ -328,8 +285,6 @@ exports.modifierRendezVous = async (req, res) => {
     if (statut) rendezVous.statut = statut;
 
     await rendezVous.save();
-
-    
     const rendezVousComplet = await RendezVous.findByPk(id, {
       include: [
         {
@@ -360,8 +315,6 @@ exports.modifierRendezVous = async (req, res) => {
     });
   }
 };
-
-
 
 exports.annulerRendezVous = async (req, res) => {
   try {
@@ -394,8 +347,6 @@ exports.annulerRendezVous = async (req, res) => {
   }
 };
 
-
-
 exports.getStatistiques = async (req, res) => {
   try {
     const stats = {
@@ -425,7 +376,6 @@ exports.getStatistiques = async (req, res) => {
     });
   }
 };
-
 
 exports.getTousDocteurs = async (req, res) => {
   try {
