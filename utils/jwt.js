@@ -1,12 +1,6 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-
-// Clé secrète pour signer les tokens JWT
 const JWT_SECRET = process.env.JWT_SECRET;
-
-// ============================================
-// GÉNÉRATION DE TOKEN JWT
-// ============================================
 
 /**
  * Génère un token JWT pour un utilisateur
@@ -19,18 +13,11 @@ const generateToken = (user) => {
     email: user.email,
     role: user.role
   };
-
-  // Générer le token avec une expiration de 24 heures
   const token = jwt.sign(payload, JWT_SECRET, {
     expiresIn: '24h'
   });
-
   return token;
 };
-
-// ============================================
-// VÉRIFICATION DE TOKEN JWT
-// ============================================
 
 /**
  * Vérifie et décode un token JWT
