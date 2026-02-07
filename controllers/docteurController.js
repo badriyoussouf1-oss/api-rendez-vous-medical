@@ -3,13 +3,9 @@ const { Docteur, RendezVous, Patient } = require('../models');
 const { generateToken } = require('../utils/jwt');
 const redisClient = require('../config/redis');
 
-
-
 exports.login = async (req, res) => {
   try {
     const { email, mot_de_passe } = req.body;
-
-    // Vérifier si le docteur existe
     const docteur = await Docteur.findOne({ where: { email } });
     if (!docteur) {
       return res.status(401).json({
@@ -17,8 +13,6 @@ exports.login = async (req, res) => {
         message: 'Email ou mot de passe incorrect'
       });
     }
-
-    // Vérifier le mot de passe
     const isPasswordValid = await bcrypt.compare(mot_de_passe, docteur.mot_de_passe);
     if (!isPasswordValid) {
       return res.status(401).json({
@@ -26,15 +20,11 @@ exports.login = async (req, res) => {
         message: 'Email ou mot de passe incorrect'
       });
     }
-
-    // Générer le token JWT
     const token = generateToken({
       id: docteur.id,
       email: docteur.email,
       role: docteur.role
     });
-
-    // Sauvegarder le token dans Redis
     await redisClient.setEx(`token:${docteur.id}`, 86400, token); // 24 heures
 
     res.status(200).json({
@@ -64,8 +54,6 @@ exports.login = async (req, res) => {
   }
 };
 
-
-
 exports.logout = async (req, res) => {
   try {
     await redisClient.del(`token:${req.user.id}`);
@@ -84,14 +72,10 @@ exports.logout = async (req, res) => {
     });
   }
 };
-
-
 exports.getMesRendezVous = async (req, res) => {
   try {
     const docteur_id = req.user.id;
-    const { statut } = req.query; // Filtrer par statut si fourni
-
-    // Construire les conditions de recherche
+    const { statut } = req.query;
     const whereConditions = { docteur_id };
     if (statut) {
       whereConditions.statut = statut;
@@ -122,15 +106,10 @@ exports.getMesRendezVous = async (req, res) => {
     });
   }
 };
-
-
-
 exports.accepterRendezVous = async (req, res) => {
   try {
     const { id } = req.params;
     const docteur_id = req.user.id;
-
-    // Vérifier que le rendez-vous existe et est assigné à ce docteur
     const rendezVous = await RendezVous.findOne({
       where: { id, docteur_id },
       include: [{
@@ -146,16 +125,12 @@ exports.accepterRendezVous = async (req, res) => {
         message: 'Rendez-vous non trouvé ou non assigné à ce docteur'
       });
     }
-
-    // Vérifier que le rendez-vous est en attente
     if (rendezVous.statut !== 'en_attente_docteur') {
       return res.status(400).json({
         success: false,
         message: `Impossible d'accepter ce rendez-vous. Statut actuel: ${rendezVous.statut}`
       });
     }
-
-    // Accepter le rendez-vous
     rendezVous.statut = 'accepte';
     await rendezVous.save();
 
@@ -174,15 +149,10 @@ exports.accepterRendezVous = async (req, res) => {
     });
   }
 };
-
-
-
 exports.refuserRendezVous = async (req, res) => {
   try {
     const { id } = req.params;
     const docteur_id = req.user.id;
-
-    // Vérifier que le rendez-vous existe et est assigné à ce docteur
     const rendezVous = await RendezVous.findOne({
       where: { id, docteur_id },
       include: [{
@@ -198,16 +168,12 @@ exports.refuserRendezVous = async (req, res) => {
         message: 'Rendez-vous non trouvé ou non assigné à ce docteur'
       });
     }
-
-    // Vérifier que le rendez-vous est en attente
     if (rendezVous.statut !== 'en_attente_docteur') {
       return res.status(400).json({
         success: false,
         message: `Impossible de refuser ce rendez-vous. Statut actuel: ${rendezVous.statut}`
       });
     }
-
-    // Refuser le rendez-vous
     rendezVous.statut = 'refuse';
     await rendezVous.save();
 
@@ -226,22 +192,17 @@ exports.refuserRendezVous = async (req, res) => {
     });
   }
 };
-
-
 exports.changerStatut = async (req, res) => {
   try {
     const docteur_id = req.user.id;
     const { statut } = req.body;
 
-    // Vérifier que le statut est valide
     if (!['libre', 'occupe'].includes(statut)) {
       return res.status(400).json({
         success: false,
         message: 'Statut invalide. Utilisez "libre" ou "occupe"'
       });
     }
-
-    // Mettre à jour le statut
     const docteur = await Docteur.findByPk(docteur_id);
     if (!docteur) {
       return res.status(404).json({
@@ -273,21 +234,14 @@ exports.changerStatut = async (req, res) => {
     });
   }
 };
-
-
-
 exports.getCalendrier = async (req, res) => {
   try {
     const docteur_id = req.user.id;
     const { date_debut, date_fin } = req.query;
-
-    // Construire les conditions de recherche
     const whereConditions = {
       docteur_id,
-      statut: 'accepte' // Uniquement les rendez-vous acceptés
+      statut: 'accepte' 
     };
-
-    // Filtrer par période si fourni
     if (date_debut && date_fin) {
       whereConditions.date = {
         [require('sequelize').Op.between]: [date_debut, date_fin]
