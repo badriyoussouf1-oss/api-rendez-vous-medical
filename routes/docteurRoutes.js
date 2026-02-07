@@ -3,8 +3,6 @@ const router = express.Router();
 const docteurController = require('../controllers/docteurController');
 const { authenticateToken, checkRole } = require('../middleware/auth');
 
-
-
 /**
  * @swagger
  * /api/docteurs/login:
