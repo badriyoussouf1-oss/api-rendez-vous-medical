@@ -1,7 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-
 const RendezVous = sequelize.define('RendezVous', {
   id: {
     type: DataTypes.INTEGER,
@@ -42,7 +41,7 @@ const RendezVous = sequelize.define('RendezVous', {
   },
   docteur_id: {
     type: DataTypes.INTEGER,
-    allowNull: true, // Peut être NULL au début (avant assignation par la secrétaire)
+    allowNull: true, 
     references: {
       model: 'docteurs',
       key: 'id'
