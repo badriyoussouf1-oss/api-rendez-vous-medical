@@ -3,8 +3,6 @@ const router = express.Router();
 const adminController = require('../controllers/adminController');
 const { authenticateToken, checkRole } = require('../middleware/auth');
 
-
-
 /**
  * @swagger
  * /api/admins/register:
