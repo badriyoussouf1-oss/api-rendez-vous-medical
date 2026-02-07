@@ -1,7 +1,5 @@
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
-
-
 const sequelize = new Sequelize(
   process.env.DB_NAME,
   process.env.DB_USER,
@@ -19,8 +17,6 @@ const sequelize = new Sequelize(
     }
   }
 );
-
-
 const testConnection = async () => {
   try {
     await sequelize.authenticate();
