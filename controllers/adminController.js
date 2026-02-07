@@ -3,14 +3,9 @@ const { Admin, Docteur, Secretaire } = require('../models');
 const { generateToken } = require('../utils/jwt');
 const redisClient = require('../config/redis');
 
-
-
-
 exports.register = async (req, res) => {
   try {
-    const { nom, prenom, email, mot_de_passe, telephone } = req.body;
-
-    
+    const { nom, prenom, email, mot_de_passe, telephone } = req.body;    
     const adminCount = await Admin.count();
     if (adminCount > 0) {
       return res.status(403).json({
@@ -18,8 +13,6 @@ exports.register = async (req, res) => {
         message: 'Un administrateur existe déjà. Les inscriptions admin sont fermées.'
       });
     }
-
-    
     const existingAdmin = await Admin.findOne({ where: { email } });
     if (existingAdmin) {
       return res.status(400).json({
@@ -27,11 +20,7 @@ exports.register = async (req, res) => {
         message: 'Cet email est déjà utilisé'
       });
     }
-
-    
     const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
-
-    
     const admin = await Admin.create({
       nom,
       prenom,
@@ -61,8 +50,6 @@ exports.register = async (req, res) => {
     });
   }
 };
-
-
 exports.login = async (req, res) => {
   try {
     const { email, mot_de_passe } = req.body;
@@ -74,9 +61,7 @@ exports.login = async (req, res) => {
         success: false,
         message: 'Email ou mot de passe incorrect'
       });
-    }
-
-    
+    }  
     const isPasswordValid = await bcrypt.compare(mot_de_passe, admin.mot_de_passe);
     if (!isPasswordValid) {
       return res.status(401).json({
@@ -84,15 +69,12 @@ exports.login = async (req, res) => {
         message: 'Email ou mot de passe incorrect'
       });
     }
-
-    
     const token = generateToken({
       id: admin.id,
       email: admin.email,
       role: admin.role
     });
 
-    
     await redisClient.setEx(`token:${admin.id}`, 86400, token); 
 
     res.status(200).json({
@@ -119,8 +101,6 @@ exports.login = async (req, res) => {
     });
   }
 };
-
-
 exports.logout = async (req, res) => {
   try {
     
@@ -141,11 +121,9 @@ exports.logout = async (req, res) => {
   }
 };
 
-
 exports.createDocteur = async (req, res) => {
   try {
     const { nom, prenom, email, mot_de_passe, telephone, specialite } = req.body;
-
     
     const existingDocteur = await Docteur.findOne({ where: { email } });
     if (existingDocteur) {
@@ -153,12 +131,8 @@ exports.createDocteur = async (req, res) => {
         success: false,
         message: 'Cet email est déjà utilisé'
       });
-    }
-
-    
+    }    
     const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
-
-   
     const docteur = await Docteur.create({
       nom,
       prenom,
@@ -193,12 +167,10 @@ exports.createDocteur = async (req, res) => {
   }
 };
 
-
 exports.createSecretaire = async (req, res) => {
   try {
     const { nom, prenom, email, mot_de_passe, telephone } = req.body;
 
-    // Vérifier si l'email existe déjà
     const existingSecretaire = await Secretaire.findOne({ where: { email } });
     if (existingSecretaire) {
       return res.status(400).json({
@@ -206,11 +178,7 @@ exports.createSecretaire = async (req, res) => {
         message: 'Cet email est déjà utilisé'
       });
     }
-
-    
-    const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
-
-   
+    const hashedPassword = await bcrypt.hash(mot_de_passe, 10);   
     const secretaire = await Secretaire.create({
       nom,
       prenom,
@@ -241,7 +209,6 @@ exports.createSecretaire = async (req, res) => {
   }
 };
 
-
 exports.getAllDocteurs = async (req, res) => {
   try {
     const docteurs = await Docteur.findAll({
@@ -264,8 +231,6 @@ exports.getAllDocteurs = async (req, res) => {
   }
 };
 
-
-
 exports.getAllSecretaires = async (req, res) => {
   try {
     const secretaires = await Secretaire.findAll({
@@ -287,8 +252,6 @@ exports.getAllSecretaires = async (req, res) => {
     });
   }
 };
-
-
 
 exports.deleteDocteur = async (req, res) => {
   try {
@@ -318,8 +281,6 @@ exports.deleteDocteur = async (req, res) => {
     });
   }
 };
-
-
 
 exports.deleteSecretaire = async (req, res) => {
   try {
