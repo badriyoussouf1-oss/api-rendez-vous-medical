@@ -121,22 +121,30 @@ exports.logout = async (req, res) => {
     });
   }
 };
-
 exports.getDocteursLibres = async (req, res) => {
   try {
     const docteurs = await Docteur.findAll({
-      where: { statut: 'libre' },
-      attributes: ['id', 'nom', 'prenom', 'specialite', 'telephone']
+
+      attributes: ['id', 'nom', 'prenom', 'specialite', 'telephone', 'statut'], 
+      order: [
+        ['statut', 'DESC'],  
+        ['nom', 'ASC']      
+      ]
     });
+
+    const docteurs_libres = docteurs.filter(d => d.statut === 'libre').length;
+    const docteurs_occupes = docteurs.filter(d => d.statut === 'occupe').length;
 
     res.status(200).json({
       success: true,
-      count: docteurs.length,
+      total: docteurs.length,           
+      libres: docteurs_libres,         
+      occupes: docteurs_occupes,        
       data: docteurs
     });
 
   } catch (error) {
-    console.error('Erreur lors de la récupération des docteurs libres:', error);
+    console.error('Erreur lors de la récupération des docteurs:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la récupération des docteurs',
@@ -214,8 +222,6 @@ exports.annulerRendezVous = async (req, res) => {
   try {
     const { id } = req.params;
     const patient_id = req.user.id;
-
-    
     const rendezVous = await RendezVous.findOne({
       where: { id, patient_id }
     });
