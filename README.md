@@ -8,7 +8,7 @@ API pour gérer les rendez-vous médicaux.
 ## Installation
 ```bash
 npm install
-# ou pip install -r requirements.txt
+
 ```
 
 ## Utilisation
