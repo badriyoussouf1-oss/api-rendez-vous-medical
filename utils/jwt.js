@@ -2,11 +2,6 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const JWT_SECRET = process.env.JWT_SECRET;
 
-/**
- * Génère un token JWT pour un utilisateur
- * @param {Object} user - Objet utilisateur (id, email, role)
- * @returns {String} Token JWT signé
- */
 const generateToken = (user) => {
   const payload = {
     id: user.id,
@@ -19,12 +14,6 @@ const generateToken = (user) => {
   return token;
 };
 
-/**
- * Vérifie et décode un token JWT
- * @param {String} token - Token JWT à vérifier
- * @returns {Object} Données décodées du token
- * @throws {Error} Si le token est invalide ou expiré
- */
 const verifyToken = (token) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
